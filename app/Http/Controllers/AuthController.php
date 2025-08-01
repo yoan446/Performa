@@ -46,10 +46,8 @@ class AuthController extends Controller
     // Structure la réponse avec le token et son expiration
     protected function respondWithToken($token)
     {
-        $refreshToken = Auth::guard('api')->refresh(true, true); // force le refresh immédiat
         return response()->json([
             'access_token' => $token,
-            'refresh_token' => $refreshToken,
             'token_type' => 'bearer',
             'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
         ]);
