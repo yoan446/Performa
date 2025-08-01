@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;  // <-- Ajouté ici
 use App\Models\Role;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject // <-- Implémentation ajoutée
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -34,20 +35,17 @@ class User extends Authenticatable
         return $this->belongsTo(Direction::class);
     }
 
-
     // L'utilisateur qui est son manager
     public function manager()
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-
     // Les utilisateurs qu'il manage
     public function subordinates()
     {
         return $this->hasMany(User::class, 'manager_id');
     }
-
 
     public function roles()
     {
@@ -63,21 +61,17 @@ class User extends Authenticatable
         return $this->roles()->where('nom_role', $role)->exists();
     }
 
-    // Dans User.php
     public function hasRoleById($roleName)
     {
         return $this->roles()->where('nom_role', $roleName)->exists();
     }
 
-
-    // Attribuer un rôle (par nom)
     public function assignRole($roleName)
     {
         $role = Role::where('nom_role', $roleName)->firstOrFail();
         $this->roles()->syncWithoutDetaching($role);
     }
 
-    // Retirer un rôle (par nom)
     public function removeRole($roleName)
     {
         $role = Role::where('nom_role', $roleName)->first();
@@ -95,9 +89,6 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Comite::class, 'comite_agent', 'user_id', 'comite_id');
     }
-
-
-
 
     /**
      * The attributes that should be hidden for serialization.
@@ -120,5 +111,26 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Méthodes requises par l'interface JWTSubject
+     */
+
+    /**
+     * Retourne l'identifiant unique de l'utilisateur (typiquement la clé primaire)
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Retourne un tableau associatif des claims personnalisés à ajouter au JWT
+     * Ici vide, mais tu peux y ajouter des données si besoin
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 }

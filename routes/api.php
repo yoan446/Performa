@@ -9,11 +9,23 @@ use App\Http\Controllers\CycleController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AppreciationController;
+use App\Http\Controllers\AuthController;
 
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware("auth:sanctum");
+
+
+//route pour le login qui n'est pas protégé
+Route::post('login', [AuthController::class, 'login']);
+
+//route pour protéger avec le auth:api
+Route::middleware('auth:api')->group(function () {
+    Route::get('me', [AuthController::class, 'me']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+});
 
 Route::prefix('comites')->group(function () {
     Route::get('/', [ComiteController::class, 'index']);        // Lister tous les comités
