@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('comites', function (Blueprint $table) {
+            $table->id();
+            $table->string('nom_comite');
+            
+            // Clés étrangères
+            $table->foreignId('cycle_id')->constrained('cycles')->onDelete('cascade');
+            $table->foreignId('direction_id')->constrained('directions')->onDelete('cascade');
+            $table->foreignId('sous_direction_id')->constrained('sous_directions')->onDelete('cascade');
+            
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('comites');
+    }
+};

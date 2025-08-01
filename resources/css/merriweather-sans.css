@@ -1,0 +1,72 @@
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-BoldItalic.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-BoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-Bold.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-ExtraBldItalic.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-ExtraBldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-Book.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-Book.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-ExtraBold.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-ExtraBold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-Italic.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-Italic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-Regular.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Merriweather Sans';
+    src: url('../fonts/merriweather-sans/MerriweatherSans-BookItalic.woff2') format('woff2'),
+        url('../fonts/merriweather-sans/MerriweatherSans-BookItalic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+
