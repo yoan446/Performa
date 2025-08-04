@@ -1,4 +1,3 @@
-
 //fonction pour créer un objectif
 function saveObjectif(event) {
         event.preventDefault();
@@ -128,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 function updateObjectif() {
     const id = document.getElementById('objectifid').value;
 
@@ -264,7 +264,7 @@ function getObjectifs(element) {
     document.getElementById('current-agent-id').value = userId;
     document.getElementById('agent-id').value = userId;
 
-    fetch(`/api/users/${userId}/objectifs`)
+    fetch(`/api/objectifs/users/${userId}/objectifs`)
         .then(response => {
             if (!response.ok) throw new Error("Erreur lors de la récupération des objectifs");
             return response.json();
@@ -346,7 +346,7 @@ function formatDate(dateStr) {
 
 //fonction pour valider un objectif
 function ValiderObjectif(agentId) {
-    fetch(`/api/agents/${agentId}/objectifs/valider-tous`, {
+    fetch(`/api/objectifs/${agentId}/objectifs/valider-tous`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

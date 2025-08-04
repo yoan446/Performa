@@ -2,43 +2,52 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PeriodeEvaluation;
+use App\Models\PeriodeAction;
 use App\Models\CycleEvaluation;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
-class PeriodeEvaluationController extends Controller
+class PeriodeActionController extends Controller
 {
-    // Liste toutes les périodes
-    public function index()
+    /**
+     * Liste toutes les périodes.
+     */
+    public function index(): JsonResponse
     {
-        $periodes = PeriodeEvaluation::all();
+        $periodes = PeriodeAction::with(['action', 'cycle'])->get();
+
         return response()->json([
             'message' => 'Liste des périodes récupérée avec succès.',
             'data' => $periodes
         ]);
     }
 
-    // Affiche une période spécifique
-    public function show($id)
+    /**
+     * Affiche une période spécifique.
+     */
+    public function show($id): JsonResponse
     {
-        $periode = PeriodeEvaluation::findOrFail($id);
+        $periode = PeriodeAction::with(['action', 'cycle'])->findOrFail($id);
+
         return response()->json([
             'message' => 'Période récupérée avec succès.',
             'data' => $periode
         ]);
     }
 
-    // Crée une nouvelle période
-    public function store(Request $request)
+    /**
+     * Crée une nouvelle période.
+     */
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'id_cycle_eval' => 'required|exists:cycles_evaluation,id_cycle',
-            'nom_phase' => 'required|string|max:255',
+            'cycle_id' => 'required|exists:cycles_evaluation,id_cycle',
+            'id_action' => 'required|exists:actions,id',
             'date_debut' => 'required|date',
             'date_fin' => 'required|date|after_or_equal:date_debut',
         ]);
 
-        $cycle = CycleEvaluation::findOrFail($validated['id_cycle_eval']);
+        $cycle = CycleEvaluation::findOrFail($validated['cycle_id']);
 
         if ($validated['date_debut'] < $cycle->date_debut || $validated['date_fin'] > $cycle->date_fin) {
             return response()->json([
@@ -46,7 +55,7 @@ class PeriodeEvaluationController extends Controller
             ], 422);
         }
 
-        $overlap = PeriodeEvaluation::where('id_cycle_eval', $validated['id_cycle_eval'])
+        $overlap = PeriodeAction::where('cycle_id', $validated['cycle_id'])
             ->where(function ($query) use ($validated) {
                 $query->whereBetween('date_debut', [$validated['date_debut'], $validated['date_fin']])
                       ->orWhereBetween('date_fin', [$validated['date_debut'], $validated['date_fin']])
@@ -62,7 +71,7 @@ class PeriodeEvaluationController extends Controller
             ], 422);
         }
 
-        $periode = PeriodeEvaluation::create($validated);
+        $periode = PeriodeAction::create($validated);
 
         return response()->json([
             'message' => 'Période créée avec succès.',
@@ -70,23 +79,25 @@ class PeriodeEvaluationController extends Controller
         ], 201);
     }
 
-    // Met à jour une période existante
-    public function update(Request $request, $id)
+    /**
+     * Met à jour une période existante.
+     */
+    public function update(Request $request, $id): JsonResponse
     {
-        $periode = PeriodeEvaluation::findOrFail($id);
+        $periode = PeriodeAction::findOrFail($id);
 
         $validated = $request->validate([
-            'id_cycle_eval' => 'sometimes|required|exists:cycles_evaluation,id_cycle',
-            'nom_phase' => 'sometimes|required|string|max:255',
+            'cycle_id' => 'sometimes|required|exists:cycles_evaluation,id_cycle',
+            'id_action' => 'sometimes|required|exists:actions,id',
             'date_debut' => 'sometimes|required|date',
             'date_fin' => 'sometimes|required|date|after_or_equal:date_debut',
         ]);
 
-        $idCycle = $validated['id_cycle_eval'] ?? $periode->id_cycle_eval;
+        $cycleId = $validated['cycle_id'] ?? $periode->cycle_id;
         $dateDebut = $validated['date_debut'] ?? $periode->date_debut;
         $dateFin = $validated['date_fin'] ?? $periode->date_fin;
 
-        $cycle = CycleEvaluation::findOrFail($idCycle);
+        $cycle = CycleEvaluation::findOrFail($cycleId);
 
         if ($dateDebut < $cycle->date_debut || $dateFin > $cycle->date_fin) {
             return response()->json([
@@ -94,7 +105,7 @@ class PeriodeEvaluationController extends Controller
             ], 422);
         }
 
-        $overlap = PeriodeEvaluation::where('id_cycle_eval', $idCycle)
+        $overlap = PeriodeAction::where('cycle_id', $cycleId)
             ->where('id', '<>', $id)
             ->where(function ($query) use ($dateDebut, $dateFin) {
                 $query->whereBetween('date_debut', [$dateDebut, $dateFin])
@@ -119,14 +130,16 @@ class PeriodeEvaluationController extends Controller
         ]);
     }
 
-    // Supprime une période
-    public function destroy($id)
+    /**
+     * Supprime une période.
+     */
+    public function destroy($id): JsonResponse
     {
-        $periode = PeriodeEvaluation::findOrFail($id);
+        $periode = PeriodeAction::findOrFail($id);
         $periode->delete();
 
         return response()->json([
             'message' => 'Période supprimée avec succès.'
-        ], 204);
+        ]);
     }
 }

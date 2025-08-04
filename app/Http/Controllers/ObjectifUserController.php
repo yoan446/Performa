@@ -122,7 +122,7 @@ class ObjectifUserController extends Controller
         ]);
     }
 
-    //rejet d'un objectif
+    //rejet des objectifs
    public function rejeter(Request $request, $agentId,$userid)
     {
         $now = Carbon::now();
@@ -400,6 +400,4 @@ class ObjectifUserController extends Controller
 
         return response()->json(['message' => 'Objectif deleted successfully']);
     }
-
-
 }

@@ -3,22 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CycleEvaluation extends Model
 {
-    // Nom de la table si différent du pluriel du modèle
+    // Nom de la table
     protected $table = 'cycles_evaluation';
 
     // Clé primaire personnalisée
     protected $primaryKey = 'id_cycle';
-
-    // Si la clé primaire est auto-incrémentée (par défaut true)
     public $incrementing = true;
-
-    // Type de la clé primaire
     protected $keyType = 'int';
 
-    // Champs assignables en masse (mass assignable)
+    // Champs assignables
     protected $fillable = [
         'titre',
         'description',
@@ -27,12 +24,31 @@ class CycleEvaluation extends Model
         'notation_max',
     ];
 
-    // Si tu utilises les timestamps (created_at, updated_at)
     public $timestamps = true;
 
-    // Relation avec le modèle Appreciation (si tu veux)
-    public function appreciations()
+    /**
+     * Relation avec les appréciations.
+     */
+    public function appreciations(): HasMany
     {
         return $this->hasMany(Appreciation::class, 'id_cycle', 'id_cycle');
+    }
+
+    /**
+     * Relation avec les périodes d'action.
+     */
+    public function periodes(): HasMany
+    {
+        return $this->hasMany(PeriodeAction::class, 'cycle_id', 'id_cycle');
+    }
+
+    /**
+     * Vérifie si le cycle est actuellement actif.
+     */
+    public function estActif(): bool
+    {
+        $now = now();
+
+        return $this->date_debut <= $now && $this->date_fin >= $now;
     }
 }

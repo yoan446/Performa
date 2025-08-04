@@ -12,8 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // C'est ici qu'on ajoute les middlewares globaux
+        // Middleware globaux
         $middleware->append(\App\Http\Middleware\PreventBackHistory::class);
+
+        // 🔒 Enregistrement du middleware personnalisé
+        $middleware->alias([
+            'check.period' => \App\Http\Middleware\CheckActionPeriod::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

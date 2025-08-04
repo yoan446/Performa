@@ -1,90 +1,109 @@
 <?php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ComiteController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ObjectifUserController;
-use App\Http\Controllers\UserAuthController;
-use App\Http\Controllers\CycleController;
-use App\Http\Controllers\EvaluationController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\AppreciationController;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\{
+    AuthController,
+    UserController,
+    ComiteController,
+    ObjectifUserController,
+    EvaluationController,
+    AppreciationController,
+    CycleController,
+    RoleController,
+    ActionController,
+    PeriodeActionController
+};
 
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware("auth:sanctum");
-
-
-//route pour le login qui n'est pas protégé
+//Route publique (non protégée)
 Route::post('login', [AuthController::class, 'login']);
 
-//route pour protéger avec le auth:api
+//Routes protégées (auth:api)
 Route::middleware('auth:api')->group(function () {
+
+    // =====================
+    // Auth
+    // =====================
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
+
+    // =====================
+    //Utilisateurs
+    // =====================
+    Route::resource('users', UserController::class);
+    Route::get('/managers/{id}/collaborateurs', [UserController::class, 'collaborateursDuManager']);
+
+    
+
+    Route::middleware(['check.period'])->group(function () {
+        // =====================
+        //Objectifs
+        // =====================
+        Route::prefix('objectifs')->group(function () {
+            Route::get('/', [ObjectifUserController::class, 'index']);
+            Route::post('/', [ObjectifUserController::class, 'store'])->name('objectifs.store');
+            Route::get('/{id}', [ComiteController::class, 'show']);
+            Route::put('/{id}', [ComiteController::class, 'update']);
+            Route::delete('/{id}', [ComiteController::class, 'destroy']);
+            Route::get('/users/{userId}/objectifs', [ObjectifUserController::class, 'getObjectifsByUser']);
+            Route::get('/statistique/{id}', [ObjectifUserController::class, 'statistique']);
+            Route::post('/{agentId}/rejeter/{userId}', [ObjectifUserController::class, 'rejeter']);
+            Route::post('/{agentId}/objectifs/valider-tous', [ObjectifUserController::class, 'validerTousObjectifs']);
+        });
+
+        // =====================
+        //Evaluations
+        // =====================
+        Route::prefix('evaluations')->group(function () {
+            Route::get('/', [EvaluationController::class, 'index']);
+            Route::get('/{id}', [EvaluationController::class, 'show']);
+            Route::post('/evaluations_agent', [EvaluationController::class, 'store_agent']);
+            Route::post('/evaluations_manager', [EvaluationController::class, 'store_manager']);
+            Route::post('/comite', [EvaluationController::class, 'store_comite']);
+            Route::put('/{id}', [EvaluationController::class, 'update']);
+            Route::delete('/{id}', [EvaluationController::class, 'destroy']);
+
+            // Evaluations filtrées
+            Route::get('/agent/{agentId}', [EvaluationController::class, 'evaluationsParAgent']);
+            Route::get('/manager/{agentId}', [EvaluationController::class, 'evaluationsAgentParManager']);
+        });
+    });
+
+    
+
+    // =====================
+    //Comités
+    // =====================
+    Route::prefix('comites')->group(function () {
+        Route::get('/', [ComiteController::class, 'index']);
+        Route::post('/', [ComiteController::class, 'store']);
+        Route::get('/{id}', [ComiteController::class, 'show']);
+        Route::put('/{id}', [ComiteController::class, 'update']);
+        Route::delete('/{id}', [ComiteController::class, 'destroy']);
+    });
+
+    // =====================
+    //Appreciations
+    // =====================
+    Route::resource('appreciations', AppreciationController::class);
+
+    // =====================
+    //Cycles
+    // =====================
+    Route::resource('cycles', CycleController::class);
+
+    // =====================
+    //Rôles
+    // =====================
+    Route::resource('roles', RoleController::class);
+
+    // =====================
+    //Actions
+    // =====================
+    Route::resource('actions', ActionController::class);
+
+    //=============================
+    //Période associé à une action
+    //=============================
+    Route::resource('periodes-actions', PeriodeActionController::class);
 });
-
-Route::prefix('comites')->group(function () {
-    Route::get('/', [ComiteController::class, 'index']);        // Lister tous les comités
-    Route::post('/', [ComiteController::class, 'store']);       // Créer un nouveau comité
-    Route::get('{id}', [ComiteController::class, 'show']);      // Afficher un comité spécifique
-    Route::put('{id}', [ComiteController::class, 'update']);    // Modifier un comité
-    Route::delete('{id}', [ComiteController::class, 'destroy']); // Supprimer un comité
-});
-
-Route::resource('appreciations', AppreciationController::class);
-
-Route::resource('/users', UserController::class);
-
-//fonction pour  recuperer tous les agents d'un maanager
-Route::get('/managers/{id}/collaborateurs', [UserController::class, 'collaborateursDuManager']);
-
-Route::resource('roles', RoleController::class);
-
-Route::resource('objectifs', ObjectifUserController::class);
-
-Route::post('/objectifs', [ObjectifUserController::class, 'store'])->name('objectifs.store');
-
-Route::get('/users/{userId}/objectifs', [ObjectifUserController::class, 'getObjectifsByUser']);
-
-// Objectifs gérés par le manager connecté
-Route::get('/manager/objectifs/agent/{agentId}', [ObjectifUserController::class, 'getObjectifsAgentPourManager']);
-
-// Objectifs d'un agent spécifique
-Route::get('/objectifs/agent/{agentId}', [ObjectifUserController::class, 'getObjectifsBySpecificAgent']);
-
-//route pour le rejet d'un objectif
-Route::post('/objectifs/{agentId}/rejeter/{userId}', [ObjectifUserController::class, 'rejeter']);
-
-
-
-// Valider tous les objectifs d’un agent (par un manager)
-Route::post('/agents/{agentId}/objectifs/valider-tous', [ObjectifUserController::class, 'validerTousObjectifs']);
-
-//route pour +les cycles
-Route::resource('/cycles', CycleController::class);
-
-//afficher les stats du user connecter
-Route::get('/objectif/statistique/{id}', [ObjectifUserController::class, 'statistique']);
-
-//route pour le controller Evaluation Objectifs
-Route::get('/evaluations', [EvaluationController::class, 'index']);
-
-Route::get('/evaluations/{id}', [EvaluationController::class, 'show']);
-
-Route::post('/evaluations_agent', [EvaluationController::class, 'store_agent']);
-
-Route::post('/evaluations_manager', [EvaluationController::class, 'store_manager']);
-
-Route::post('/evaluations_comite', [EvaluationController::class, 'store_comite']);
-
-Route::put('/evaluations/{id}', [EvaluationController::class, 'update']);
-
-Route::delete('/evaluations/{id}', [EvaluationController::class, 'destroy']);
-
-// Routes spécifiques
-Route::get('/evaluations/agent/{agentId}', [EvaluationController::class, 'evaluationsParAgent']);
-Route::get('/evaluations/manager/{agentId}', [EvaluationController::class, 'evaluationsAgentParManager']);

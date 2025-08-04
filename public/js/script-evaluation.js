@@ -72,7 +72,7 @@ async function submitEvaluation(event) {
 );
 
 try {
-    const response = await fetch('/api/evaluations_agent', {
+    const response = await fetch('/api/evaluations/evaluations_agent', {
       method: 'POST',
       body: formData
     });
@@ -109,7 +109,7 @@ try {
 );
 
 try {
-    const response = await fetch('/api/evaluations_manager', {
+    const response = await fetch('/api/evaluations/evaluations_manager', {
       method: 'POST',
       body: formData
     });
