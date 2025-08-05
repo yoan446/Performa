@@ -11,7 +11,9 @@ use App\Http\Controllers\{
     CycleController,
     RoleController,
     ActionController,
-    PeriodeActionController
+    PeriodeActionController,
+    MetricController,
+    StatutController
 };
 
 //Route publique (non protégée)
@@ -106,4 +108,15 @@ Route::middleware('auth:api')->group(function () {
     //Période associé à une action
     //=============================
     Route::resource('periodes-actions', PeriodeActionController::class);
+
+    //==============================
+    //Metrics pour les objectifs
+    //=============================
+    Route::resource('metrics', MetricController::class);
+
+    //==========================================
+    //Statuts pour les objectifs et evaluations
+    //==========================================
+    Route::resource('statuts', StatutController::class);
+
 });
