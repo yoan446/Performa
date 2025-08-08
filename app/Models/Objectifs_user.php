@@ -20,7 +20,7 @@ class Objectifs_user extends Model
         'statut_objectif',
         'manager_id',
         'agent_id',
-        'Cycle_id'
+        'id_cycle'
     ];
 
 
@@ -36,7 +36,7 @@ class Objectifs_user extends Model
 
     public function cycle()
     {
-        return $this->belongsTo(Cycle::class, 'Cycle_id');
+        return $this->belongsTo(CycleEvaluation::class, 'id_cycle');
     }
     
 }

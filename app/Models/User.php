@@ -24,6 +24,7 @@ class User extends Authenticatable implements JWTSubject // <-- Implémentation 
         'name',
         'secondname',
         'email',
+        'url_photo',
         'user_job_name',
         'direction_id',
         'statut_user',

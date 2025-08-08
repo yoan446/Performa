@@ -41,6 +41,7 @@ class CheckActionPeriod
         if (!$periodeActive) {
             return response()->json([
                 'message' => 'Cette action n\'est pas autorisée à cette période.'
+                , 'action' => $currentUrl
             ], 403);
         }
 

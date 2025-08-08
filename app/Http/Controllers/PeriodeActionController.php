@@ -55,19 +55,21 @@ class PeriodeActionController extends Controller
             ], 422);
         }
 
+        // ✅ Vérifie le chevauchement uniquement pour la *même action* dans le même cycle
         $overlap = PeriodeAction::where('cycle_id', $validated['cycle_id'])
+            ->where('id_action', $validated['id_action'])
             ->where(function ($query) use ($validated) {
                 $query->whereBetween('date_debut', [$validated['date_debut'], $validated['date_fin']])
-                      ->orWhereBetween('date_fin', [$validated['date_debut'], $validated['date_fin']])
-                      ->orWhere(function($q) use ($validated) {
-                          $q->where('date_debut', '<=', $validated['date_debut'])
+                    ->orWhereBetween('date_fin', [$validated['date_debut'], $validated['date_fin']])
+                    ->orWhere(function ($q) use ($validated) {
+                        $q->where('date_debut', '<=', $validated['date_debut'])
                             ->where('date_fin', '>=', $validated['date_fin']);
-                      });
+                    });
             })->exists();
 
         if ($overlap) {
             return response()->json([
-                'message' => 'Cette période chevauche une autre période existante du même cycle.'
+                'message' => 'Cette action a déjà une période qui chevauche cette plage dans ce cycle.'
             ], 422);
         }
 
@@ -78,6 +80,7 @@ class PeriodeActionController extends Controller
             'data' => $periode
         ], 201);
     }
+
 
     /**
      * Met à jour une période existante.

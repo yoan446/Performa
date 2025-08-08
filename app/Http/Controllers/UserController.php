@@ -28,6 +28,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'secondname' => 'nullable|string|max:300',
             'email' => 'required|email|unique:users,email',
+            'url_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // ⬅️ maintenant on attend un fichier image
             'user_job_name' => 'nullable|string|max:100',
             'direction_id' => 'nullable|exists:directions,id',
             'statut_user' => 'nullable|string|max:40',
@@ -35,7 +36,14 @@ class UserController extends Controller
             'roles' => 'required|array',
             'roles.*' => 'exists:roles,id',
         ]);
-        $id_direction= $validated['direction_id'];
+
+        // 🔁 Gestion de la photo de profil
+        $photoPath = null;
+        if ($request->hasFile('url_photo')) {
+            $photoPath = $request->file('url_photo')->store('photos', 'public');
+        }
+
+        $id_direction = $validated['direction_id'];
         $chef = Direction::where('id', $id_direction)->value('chef');
 
         $user = User::create([
@@ -45,11 +53,11 @@ class UserController extends Controller
             'user_job_name' => $validated['user_job_name'] ?? null,
             'direction_id' => $validated['direction_id'] ?? null,
             'statut_user' => $validated['statut_user'] ?? null,
-            'manager_id' =>  $chef ?? null,
+            'manager_id' => $chef ?? null,
             'password' => Hash::make($validated['password']),
+            'url_photo' => $photoPath, //Chemin relatif enregistré
         ]);
 
-        // Associer les rôles (remplace attach par sync pour éviter les doublons)
         $user->roles()->sync($validated['roles']);
 
         return response()->json([
@@ -57,6 +65,7 @@ class UserController extends Controller
             'user' => $user->load('roles'),
         ]);
     }
+
 
 
     // Afficher un utilisateur précis

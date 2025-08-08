@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     ObjectifUserController,
     EvaluationController,
     AppreciationController,
-    CycleController,
+    CycleEvaluationController,
     RoleController,
     ActionController,
     PeriodeActionController,
@@ -44,9 +44,9 @@ Route::middleware('auth:api')->group(function () {
         Route::prefix('objectifs')->group(function () {
             Route::get('/', [ObjectifUserController::class, 'index']);
             Route::post('/', [ObjectifUserController::class, 'store'])->name('objectifs.store');
-            Route::get('/{id}', [ComiteController::class, 'show']);
-            Route::put('/{id}', [ComiteController::class, 'update']);
-            Route::delete('/{id}', [ComiteController::class, 'destroy']);
+            Route::get('/{id}', [ObjectifUserController::class, 'show']);
+            Route::put('/{id}', [ObjectifUserController::class, 'update']);
+            Route::delete('/{id}', [ObjectifUserController::class, 'destroy']);
             Route::get('/users/{userId}/objectifs', [ObjectifUserController::class, 'getObjectifsByUser']);
             Route::get('/statistique/{id}', [ObjectifUserController::class, 'statistique']);
             Route::post('/{agentId}/rejeter/{userId}', [ObjectifUserController::class, 'rejeter']);
@@ -90,9 +90,9 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('appreciations', AppreciationController::class);
 
     // =====================
-    //Cycles
+    //Cycles évaluation
     // =====================
-    Route::resource('cycles', CycleController::class);
+    Route::resource('cycles', CycleEvaluationController::class);
 
     // =====================
     //Rôles
