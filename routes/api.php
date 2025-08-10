@@ -13,7 +13,9 @@ use App\Http\Controllers\{
     ActionController,
     PeriodeActionController,
     MetricController,
-    StatutController
+    StatutController,
+    ComiteResponsableController,
+    ComiteEvalueController
 };
 
 //Route publique (non protégée)
@@ -23,7 +25,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::middleware('auth:api')->group(function () {
 
     // =====================
-    // Auth
+    // Auth ok
     // =====================
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
@@ -39,7 +41,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::middleware(['check.period'])->group(function () {
         // =====================
-        //Objectifs
+        //Objectifs OK
         // =====================
         Route::prefix('objectifs')->group(function () {
             Route::get('/', [ObjectifUserController::class, 'index']);
@@ -74,7 +76,7 @@ Route::middleware('auth:api')->group(function () {
     
 
     // =====================
-    //Comités
+    //Comités OK
     // =====================
     Route::prefix('comites')->group(function () {
         Route::get('/', [ComiteController::class, 'index']);
@@ -84,39 +86,63 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/{id}', [ComiteController::class, 'destroy']);
     });
 
+
+    //======================
+    //Comités responsable OK
+    //======================
+    
+   Route::prefix('comite-responsable')->group(function () {
+        Route::get('/{comiteId}', [ComiteResponsableController::class, 'index']);       
+        Route::post('/{comiteId}', [ComiteResponsableController::class, 'store']);
+        Route::put('/{comiteId}', [ComiteResponsableController::class, 'update']);
+        Route::delete('/{comiteId}/{userId}', [ComiteResponsableController::class, 'detach']);
+    });
+
+
+    //============================
+    //Comités personne evalué OK 
+    //============================
+
+    Route::prefix('comite-evalue')->group(function () {
+        Route::get('{comiteId}', [ComiteEvalueController::class, 'index']);
+        Route::post('{comiteId}', [ComiteEvalueController::class, 'store']);
+        Route::put('{comiteId}', [ComiteEvalueController::class, 'update']);
+        Route::delete('{comiteId}/{userId}', [ComiteEvalueController::class, 'detach']);
+    });
+
     // =====================
-    //Appreciations
+    //Appreciations OK
     // =====================
     Route::resource('appreciations', AppreciationController::class);
 
     // =====================
-    //Cycles évaluation
+    //Cycles évaluation ok
     // =====================
     Route::resource('cycles', CycleEvaluationController::class);
 
     // =====================
-    //Rôles
+    //Rôles ok
     // =====================
     Route::resource('roles', RoleController::class);
 
     // =====================
-    //Actions
+    //Actions ok
     // =====================
     Route::resource('actions', ActionController::class);
 
     //=============================
-    //Période associé à une action
+    //Période associé à une action ok
     //=============================
     Route::resource('periodes-actions', PeriodeActionController::class);
 
     //==============================
-    //Metrics pour les objectifs
+    //Metrics pour les objectifs ok
     //=============================
     Route::resource('metrics', MetricController::class);
 
-    //==========================================
-    //Statuts pour les objectifs et evaluations
-    //==========================================
+    //=============================================
+    //Statuts pour les objectifs et evaluations ok
+    //=============================================
     Route::resource('statuts', StatutController::class);
 
 });

@@ -17,7 +17,7 @@ class Comite extends Model
     // Relation vers Cycle
     public function cycle(): BelongsTo
     {
-        return $this->belongsTo(Cycle::class);
+        return $this->belongsTo(CycleEvaluation::class, 'cycle_id', 'id_cycle');
     }
 
    
@@ -29,6 +29,6 @@ class Comite extends Model
 
     public function agents()
     {
-        return $this->belongsToMany(User::class, 'comite_agent', 'comite_id', 'user_id');
+        return $this->belongsToMany(User::class, 'comites_agents', 'comite_id', 'user_id');
     }
 }

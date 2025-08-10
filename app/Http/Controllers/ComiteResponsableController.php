@@ -9,17 +9,29 @@ use Illuminate\Http\Request;
 class ComiteResponsableController extends Controller
 {
     /**
-     * Liste des responsables liés à un comité
+     * Lister tous les responsables d'un comité
      */
     public function index($comiteId)
     {
-        // Charger avec la relation "responsables"
-        $comite = Comite::with('responsables')->findOrFail($comiteId);
-        return response()->json($comite->responsables);
+        try {
+             $comite = Comite::findOrFail($comiteId);
+            // Charger les responsables filtrés par rôle 'comite'
+            $responsables = $comite->responsables()->whereHas('roles', function($query) {
+                $query->where('nom_role', 'comite');
+            })->get();
+
+            return response()->json([
+                'message' => 'Liste des responsables récupérée avec succès.',
+                'responsables' => $responsables,
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => "Comité avec ID $comiteId non trouvé."], 404);
+        }
+       
     }
 
     /**
-     * Lier plusieurs utilisateurs comme responsables à un comité (vérifie le rôle "comite")
+     * Ajouter un ou plusieurs responsables à un comité (sans supprimer les anciens)
      */
     public function store(Request $request, $comiteId)
     {
@@ -28,16 +40,31 @@ class ComiteResponsableController extends Controller
             'user_ids.*' => 'exists:users,id',
         ]);
 
+        // Vérifier que tous les utilisateurs ont le rôle 'comite'
+        $invalidUsers = User::whereIn('id', $request->user_ids)
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('nom_role', 'comite');
+            })->pluck('id');
+
+        if ($invalidUsers->isNotEmpty()) {
+            return response()->json([
+                'message' => "Les utilisateurs suivants n'ont pas le rôle 'comite' :",
+                'invalid_user_ids' => $invalidUsers,
+            ], 422);
+        }
+
         $comite = Comite::findOrFail($comiteId);
 
-        // Synchroniser sans détacher (ajouter sans supprimer les anciens)
+        // Ajouter sans détacher les anciens
         $comite->responsables()->syncWithoutDetaching($request->user_ids);
 
-        return response()->json(['message' => 'Utilisateurs liés au comité avec succès.']);
+        return response()->json([
+            'message' => 'Responsables ajoutés avec succès au comité.',
+        ]);
     }
 
     /**
-     * Met à jour la liste des responsables liés à un comité (remplace tous)
+     * Mettre à jour la liste des responsables d’un comité (remplacer complètement)
      */
     public function update(Request $request, $comiteId)
     {
@@ -46,57 +73,48 @@ class ComiteResponsableController extends Controller
             'user_ids.*' => 'exists:users,id',
         ]);
 
+        $invalidUsers = User::whereIn('id', $request->user_ids)
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('nom_role', 'comite');
+            })->pluck('id');
+
+        if ($invalidUsers->isNotEmpty()) {
+            return response()->json([
+                'message' => "Les utilisateurs suivants n'ont pas le rôle 'comite' :",
+                'invalid_user_ids' => $invalidUsers,
+            ], 422);
+        }
+
         $comite = Comite::findOrFail($comiteId);
 
-        // Synchroniser (remplacer la liste)
+        // Remplacer la liste complète
         $comite->responsables()->sync($request->user_ids);
 
-        return response()->json(['message' => 'Liste mise à jour avec succès.']);
+        return response()->json([
+            'message' => 'Liste des responsables mise à jour avec succès.',
+        ]);
     }
 
     /**
-     * Retirer un responsable spécifique d’un comité
+     * Supprimer un responsable spécifique d’un comité
      */
     public function detach($comiteId, $userId)
     {
         $comite = Comite::findOrFail($comiteId);
-        $comite->responsables()->detach($userId);
 
-        return response()->json(['message' => 'Utilisateur retiré du comité.']);
-    }
-
-    /**
-     * Transférer un groupe de responsables d’un comité à un autre
-     */
-    public function transfer(Request $request)
-    {
-        $request->validate([
-            'from_comite_id' => 'required|exists:comites,id',
-            'to_comite_id' => 'required|exists:comites,id|different:from_comite_id',
-            'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id',
-        ]);
-
-        // Vérification des rôles "comite" - attention à ta relation roles() dans User (au pluriel)
-        $invalidUsers = User::whereIn('id', $request->user_ids)
-            ->whereDoesntHave('roles', function ($query) {
-                $query->where('nom_role', 'comite');
-            })
-            ->pluck('id');
-
-        if ($invalidUsers->isNotEmpty()) {
+        // Vérifier que l'utilisateur a le rôle 'comite'
+        $user = User::findOrFail($userId);
+        if (!$user->roles()->where('nom_role', 'comite')->exists()) {
             return response()->json([
-                'message' => 'Certains utilisateurs ne possèdent pas le rôle "comite".',
-                'invalid_user_ids' => $invalidUsers
+                'message' => "L'utilisateur spécifié n'a pas le rôle 'comite'."
             ], 422);
         }
 
-        $from = Comite::findOrFail($request->from_comite_id);
-        $to = Comite::findOrFail($request->to_comite_id);
+        // Détacher l'utilisateur
+        $comite->responsables()->detach($userId);
 
-        $from->responsables()->detach($request->user_ids);
-        $to->responsables()->syncWithoutDetaching($request->user_ids);
-
-        return response()->json(['message' => 'Transfert effectué avec succès.']);
+        return response()->json([
+            'message' => 'Responsable retiré du comité avec succès.',
+        ]);
     }
 }

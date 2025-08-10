@@ -3,22 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comite;
-use App\Models\User;
 use Illuminate\Http\Request;
 
 class ComiteEvalueController extends Controller
 {
     /**
-     * Affiche les agents évalués liés à un comité donné
+     * Liste des agents évalués liés à un comité
      */
     public function index($comiteId)
     {
-        $comite = Comite::with('evaluatedAgents')->findOrFail($comiteId);
-        return response()->json($comite->evaluatedAgents);
+        $comite = Comite::findOrFail($comiteId);
+
+        // Charge les agents évalués associés via la relation 'agents'
+        $agents = $comite->agents()->get();
+
+        return response()->json([
+            'message' => 'Liste des agents évalués récupérée avec succès.',
+            'agents' => $agents,
+        ]);
     }
 
     /**
-     * Ajoute un ou plusieurs agents évalués à un comité sans supprimer les autres
+     * Ajoute un ou plusieurs agents évalués à un comité (sans supprimer les autres)
      */
     public function store(Request $request, $comiteId)
     {
@@ -28,13 +34,15 @@ class ComiteEvalueController extends Controller
         ]);
 
         $comite = Comite::findOrFail($comiteId);
-        $comite->evaluatedAgents()->syncWithoutDetaching($request->user_ids);
+        $comite->agents()->syncWithoutDetaching($request->user_ids);
 
-        return response()->json(['message' => 'Agents évalués ajoutés au comité avec succès.']);
+        return response()->json([
+            'message' => 'Agents évalués ajoutés au comité avec succès.',
+        ]);
     }
 
     /**
-     * Met à jour (remplace complètement) les agents évalués associés à un comité
+     * Met à jour (remplace complètement) la liste des agents évalués associés à un comité
      */
     public function update(Request $request, $comiteId)
     {
@@ -44,9 +52,11 @@ class ComiteEvalueController extends Controller
         ]);
 
         $comite = Comite::findOrFail($comiteId);
-        $comite->evaluatedAgents()->sync($request->user_ids);
+        $comite->agents()->sync($request->user_ids);
 
-        return response()->json(['message' => 'Liste des agents évalués mise à jour avec succès.']);
+        return response()->json([
+            'message' => 'Liste des agents évalués mise à jour avec succès.',
+        ]);
     }
 
     /**
@@ -55,29 +65,18 @@ class ComiteEvalueController extends Controller
     public function detach($comiteId, $userId)
     {
         $comite = Comite::findOrFail($comiteId);
-        $comite->evaluatedAgents()->detach($userId);
 
-        return response()->json(['message' => 'Agent évalué retiré du comité.']);
-    }
+        // Optionnel : vérifier que l'agent est bien lié avant detach
+        if (!$comite->agents()->where('user_id', $userId)->exists()) {
+            return response()->json([
+                'message' => "L'agent évalué spécifié n'est pas lié à ce comité.",
+            ], 404);
+        }
 
-    /**
-     * Transfère des agents évalués d’un comité source vers un comité cible
-     */
-    public function transfer(Request $request)
-    {
-        $request->validate([
-            'from_comite_id' => 'required|exists:comites,id',
-            'to_comite_id' => 'required|exists:comites,id|different:from_comite_id',
-            'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id',
+        $comite->agents()->detach($userId);
+
+        return response()->json([
+            'message' => 'Agent évalué retiré du comité avec succès.',
         ]);
-
-        $from = Comite::findOrFail($request->from_comite_id);
-        $to = Comite::findOrFail($request->to_comite_id);
-
-        $from->evaluatedAgents()->detach($request->user_ids);
-        $to->evaluatedAgents()->syncWithoutDetaching($request->user_ids);
-
-        return response()->json(['message' => 'Transfert des agents évalués effectué avec succès.']);
     }
 }

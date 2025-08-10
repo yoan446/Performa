@@ -7,17 +7,18 @@ use Illuminate\Http\Request;
 
 class ComiteController extends Controller
 {
-    public function index()
+   public function index()
     {
-        $comites = Comite::all();
+        $comites = Comite::with('cycle')->get();
         return response()->json($comites);
     }
+
 
     public function store(Request $request)
     {
         $request->validate([
             'nom_comite' => 'required|string|max:255',
-            'cycle_id' => 'required|exists:cycles,id',
+            'cycle_id' => 'required|exists:cycles_evaluation,id_cycle',
         ]);
 
         $comite = Comite::create($request->all());
@@ -28,19 +29,33 @@ class ComiteController extends Controller
         ], 201);
     }
 
-    public function show(Comite $comite)
+   public function show($id)
     {
-        return response()->json($comite);
+        $comite =  Comite::with('cycle')->find($id);
+
+        if (!$comite) {
+            return response()->json(['message' => 'Comité non trouvé'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Comité récupéré avec succès.',
+            'data' => $comite
+        ]);
     }
 
-    public function update(Request $request, Comite $comite)
+
+    public function update(Request $request, $id)
     {
-        $request->validate([
+        // Récupérer le comité ou renvoyer une 404 si introuvable
+        $comite = Comite::findOrFail($id);
+
+        $validated = $request->validate([
             'nom_comite' => 'required|string|max:255',
-            'cycle_id' => 'required|exists:cycles,id',
+            'cycle_id' => 'required|exists:cycles_evaluation,id_cycle',
         ]);
 
-        $comite->update($request->all());
+        // Mise à jour uniquement avec les données validées
+        $comite->update($validated);
 
         return response()->json([
             'message' => 'Comité mis à jour avec succès.',
@@ -48,8 +63,17 @@ class ComiteController extends Controller
         ]);
     }
 
-    public function destroy(Comite $comite)
+
+    public function destroy($id)
     {
+        $comite = Comite::find($id);
+
+        if (!$comite) {
+            return response()->json([
+                'message' => 'Comité non trouvé.'
+            ], 404);
+        }
+
         $comite->delete();
 
         return response()->json([
