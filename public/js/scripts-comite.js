@@ -12,12 +12,19 @@ function saveCommittee(event) {
         cycle_id: cycleId
     };
 
+    const token = localStorage.getItem('access_token'); // Récupère le token JWT depuis le localStorage
+
+    if (!token) {
+        showNotification('Token d\'authentification manquant. Veuillez vous connecter.', true);
+        return;
+    }
+
     fetch('/api/comites', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'Authorization': `Bearer ${token}` // Ajouter le token JWT ici
         },
         body: JSON.stringify(data)
     })
@@ -47,7 +54,6 @@ function saveCommittee(event) {
         } else {
             showNotification(resData.message || 'Échec de la création du comité.', true);
         }
-
     })
     .catch(error => {
         console.error('Erreur :', error);
@@ -102,11 +108,19 @@ function editCommittee(id) {
 // Supprimer un comité
 function deleteCommittee(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce comité ?')) {
+        const token = localStorage.getItem('access_token'); // Récupère le token JWT
+
+        if (!token) {
+            showNotification('Token d\'authentification manquant. Veuillez vous connecter.', true);
+            return;
+        }
+
         fetch(`/api/comites/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'Authorization': `Bearer ${token}` // Ajouter le token JWT ici
             }
         })
         .then(async response => {
@@ -139,12 +153,19 @@ function updateCommittee(event) {
         cycle_id: cycleId
     };
 
+    const token = localStorage.getItem('access_token'); // Récupère le token JWT
+
+    if (!token) {
+        showNotification('Token d\'authentification manquant. Veuillez vous connecter.', true);
+        return;
+    }
+
     fetch(`/api/comites/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'Authorization': `Bearer ${token}` // Ajouter le token JWT ici
         },
         body: JSON.stringify(data)
     })

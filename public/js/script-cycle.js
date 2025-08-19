@@ -1,140 +1,158 @@
-//fonction pour soit ajouter soit modifier un cycle
-function saveCycle(event) {
-    event.preventDefault();
+// ===============================
+// Variables globales
+// ===============================
+const API_BASE_URL = "/api/periodes-actions"; // Laravel resource
+const token = localStorage.getItem('access_token');
 
-    const action = event.submitter?.id; // "btn-create" ou "btn-update"
-    const isUpdate = action === 'btn-update';
+if (!token) {
+  console.error("Aucun token trouvé. L'utilisateur doit se connecter.");
+}
 
-    const data = {
-        nom_cycle: document.getElementById('cycle-name').value,
-        debut_fixation: document.getElementById('debut-objectif').value,
-        fin_fixation: document.getElementById('fin-objectif').value,
-        debut_auto_eval: document.getElementById('debut-auto').value,
-        fin_auto_eval: document.getElementById('fin-auto').value,
-        debut_eval_manager: document.getElementById('debut-manager').value,
-        fin_eval_manager: document.getElementById('fin-manager').value,
-        debut_eval_comite: document.getElementById('debut-comite').value,
-        fin_eval_comite: document.getElementById('fin-comite').value
-    };
+// ===============================
+// Utilitaire fetch avec JWT
+// ===============================
+async function apiRequest(url, method = "GET", data = null) {
+  const options = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  if (data) options.body = JSON.stringify(data);
 
-    // Si update, ajouter l'ID
-    const cycleId = document.getElementById('cycleId').value;
-    if (isUpdate && cycleId) {
-        data.id = cycleId;
-    }
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || "Erreur API");
+  }
+  return response.json();
+}
 
-    // Choix de la méthode et de l’URL
-    const url = isUpdate ? `/api/cycles/${cycleId}` : '/api/cycles';
-    const method = isUpdate ? 'PUT' : 'POST';
+// ===============================
+// Chargement des périodes
+// ===============================
+async function loadPeriodes() {
+  try {
+    const response = await apiRequest(API_BASE_URL);
+    const periodes = Array.isArray(response) ? response : response.data || [];
 
-    fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(async response => {
-        const responseData = await response.json();
+    const tbody = document.querySelector("#periodes-list");
+    tbody.innerHTML = "";
 
-        if (response.ok && responseData.data?.id) {
-            showNotification(isUpdate ? 'Cycle mis à jour avec succès !' : 'Cycle créé avec succès !');
-            document.querySelector('.form-perfoma').reset();
-            if (isUpdate) {
-                //redirection vers manage period
-                window.location.href = '/user-manage-period';
+    periodes.forEach((periode) => {
+      const tr = document.createElement("tr");
 
-                // Remettre en mode création après update
-                document.getElementById('btn-update').style.display = 'none';
-                document.getElementById('btn-create').style.display = 'block';
-                document.getElementById('cycleId').value = '';
-                document.getElementById('titre-cycle').textContent = 'Create Cycle';
-            }
-        } else {
-            console.error('Réponse invalide ou incomplète', responseData);
-            showNotification(responseData.message || 'Erreur pendant la soumission du cycle', true);
-        }
-    })
-    .catch(error => {
-        console.error('Erreur réseau ou serveur :', error);
-        showNotification('Une erreur est survenue. Veuillez réessayer.', true);
+      tr.innerHTML = `
+        <td>${periode.id}</td>
+        <td>${periode.action?.description || "-"}</td>
+        <td>${periode.cycle?.titre || "-"}</td>
+        <td>${periode.date_debut}</td>
+        <td>${periode.date_fin}</td>
+        <td style="display:flex">
+          <button class="btn-edit" onclick="editPeriode(${periode.id})">Modifier</button>
+          <button class="btn-delete" onclick="deletePeriode(${periode.id})">Supprimer</button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
     });
+  } catch (error) {
+    console.error("Erreur chargement périodes :", error.message);
+  }
 }
 
 
-function showNotification(message, isError = false) {
-    const notification = document.getElementById('notification');
-    if (!notification) return;
+// ===============================
+// Ajout / Edition de période
+// ===============================
+async function savePeriode(event) {
+  event.preventDefault();
 
-    notification.textContent = (isError ? '❌ ' : '✅ ') + message;
-    notification.style.backgroundColor = isError ? '#f8d7da' : '#d1e7dd';
-    notification.style.color = isError ? '#842029' : '#0f5132';
-    notification.style.border = `1px solid ${isError ? '#f5c2c7' : '#badbcc'}`;
-    notification.style.display = 'block';
+  const id = document.querySelector("#periodeId").value;
+  const data = {
+    id_action: document.querySelector("#action_id").value,
+    cycle_id: document.querySelector("#cycle_id").value,
+    date_debut: document.querySelector("#date_debut").value,
+    date_fin: document.querySelector("#date_fin").value,
+  };
 
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 5000);
-}
-
-
-
-//dans le fichier manage period
-//fonction pour récuper les donnée de de la ligne et afficher dans le form
-function goToCreatePeriod(button) {
-    // 1. Récupère l'ID du cycle depuis l'attribut data-id du bouton
-    const cycleId = button.getAttribute('data-id');
-
-    // 2. Récupère la ligne (tr) contenant le bouton
-    const row = button.closest('tr');
-
-    // 3. Récupère toutes les cellules (td) de la ligne
-    const cells = row.querySelectorAll('td');
-
-    // 4. Récupère le contenu texte de chaque cellule
-    const cycleData = {
-        id: cycleId,
-        nom: cells[0]?.innerText.trim(),
-        fixation: cells[1]?.innerText.trim(),
-        auto_eval: cells[2]?.innerText.trim(),
-        eval_manager: cells[3]?.innerText.trim(),
-        eval_comite: cells[4]?.innerText.trim()
-    };
-
-    // 5. Stocker les infos localement (tu peux aussi utiliser sessionStorage)
-    localStorage.setItem('selectedCycle', JSON.stringify(cycleData));
-
-    // 6. Redirection vers la page suivante
-    window.location.href = '/user-create-period-management';
-    switchToUpdateMode();
-}
-
-
-//fonction pour supprimer un cycle
-function deleteCycle(cycleId) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce cycle d\'évaluation ?')) {
-        fetch(`/api/cycles/${cycleId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        })
-        .then(async response => {
-            const data = await response.json();
-            if (response.ok) {
-                showNotification('Cycle supprimé avec succès !');
-                // Supprimer la ligne du tableau (optionnel)
-                const row = document.querySelector(`tr[data-cycle-id="${cycleId}"]`);
-                if (row) row.remove();
-            } else {
-                showNotification(data.message || 'Échec de la suppression', true);
-            }
-        })
-        .catch(error => {
-            console.error('Erreur lors de la suppression :', error);
-            showNotification('Une erreur est survenue. Veuillez réessayer.', true);
-        });
+  try {
+    if (id) {
+      // Edition
+      await apiRequest(`${API_BASE_URL}/${id}`, "PUT", data);
+    } else {
+      // Création
+      await apiRequest(API_BASE_URL, "POST", data);
     }
+
+    document.querySelector("#periodeForm").reset();
+    bootstrap.Modal.getInstance(document.querySelector("#periodeModal")).hide();
+    loadPeriodes();
+  } catch (error) {
+    alert("Erreur sauvegarde : " + error.message);
+    console.log(data);
+  }
+}
+
+// ===============================
+// Pré-remplissage formulaire Edition
+// ===============================
+async function editPeriode(id) {
+  try {
+    const periode = await apiRequest(`${API_BASE_URL}/${id}`);
+
+    // remplir le formulaire
+    document.querySelector("#periodeId").value = periode.id;           // important pour édition
+    document.querySelector("#action_id").value = periode.id_action;
+    document.querySelector("#cycle_id").value = periode.cycle_id;
+    document.querySelector("#date_debut").value = periode.date_debut;
+    document.querySelector("#date_fin").value = periode.date_fin;
+
+    // changer le titre du modal
+    document.getElementById("periodeModalLabel").textContent = "Modifier la période";
+
+    // ouvrir le modal
+    new bootstrap.Modal(document.querySelector("#periodeModal")).show();
+  } catch (error) {
+    alert("Erreur chargement période : " + error.message);
+  }
+}
+
+
+// ===============================
+// Suppression période
+// ===============================
+async function deletePeriode(id) {
+  if (!confirm("Voulez-vous vraiment supprimer cette période ?")) return;
+
+  try {
+    await apiRequest(`${API_BASE_URL}/${id}`, "DELETE");
+    loadPeriodes();
+  } catch (error) {
+    alert("Erreur suppression : " + error.message);
+  }
+}
+
+// ===============================
+// Initialisation
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  loadPeriodes();
+  document.querySelector("#periodeForm").addEventListener("submit", savePeriode);
+  const btnCreate = document.getElementById("btn-open-create");
+  if (btnCreate) {
+    btnCreate.addEventListener("click", openCreateModal);
+  }
+});
+
+
+//==============================
+//fonction pour ouvrir le modal
+//==============================
+function openCreateModal() {
+  document.getElementById("periodeForm").reset(); // réinitialise le formulaire
+  document.getElementById("periodeId").value = "";  // vide l'id pour création
+  document.getElementById("periodeModalLabel").textContent = "Nouvelle période";
+  new bootstrap.Modal(document.getElementById("periodeModal")).show();
 }

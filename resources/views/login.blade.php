@@ -11,37 +11,60 @@
 
 <body class="bg-background">
 
-    <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center px-3">
-        <div class="w-100" style="max-width: 400px;">
-            <h4 class="mb-2">Connexion</h4>
-            <p class="mb-4 text-muted">Ravi de vous revoir, veuillez entrer vos identifiants</p>
+   <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center px-3">
+    <div class="w-100" style="max-width: 400px;">
+        <h4 class="mb-2">Connexion</h4>
+        <p class="mb-4 text-muted">Ravi de vous revoir, veuillez entrer vos identifiants</p>
 
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
+        {{-- Message d'erreur général --}}
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
 
-            <form action="{{ route('login.submit') }}" method="POST" class="w-100">
-                @csrf
+        {{-- Messages de validation Laravel --}}
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" name="email" id="email" class="form-control input-login" placeholder="Entrez votre email" required>
-                </div>
+        {{-- Message si déjà connecté --}}
+        @if(session('user_id'))
+            <div class="alert alert-info">
+                Vous êtes déjà connecté en tant que <strong>{{ implode(', ', session('roles', [])) }}</strong>.
+            </div>
+        @endif
 
-                <div class="mb-3">
-                    <label for="password" class="form-label">Mot de passe</label>
-                    <input type="password" name="password" id="password" class="form-control input-login" placeholder="Entrez votre mot de passe" required>
-                </div>
+        <form action="" method="POST" class="w-100">
+            @csrf
 
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-submit">Se connecter</button>
-                </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" name="email" id="email" value="{{ old('email') }}" class="form-control input-login" placeholder="Entrez votre email" required>
+            </div>
 
-            </form>
-        </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" name="password" id="password" class="form-control input-login" placeholder="Entrez votre mot de passe" required>
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-submit">Se connecter</button>
+            </div>
+        </form>
     </div>
+</div>
+
 
     <script src="{{ asset('js/bootstrap.js') }}"></script>
     <script src="{{ asset('js/jquery.js') }}"></script>
+    <script>
+        const dashboardUrl = "{{ route('dashboard') }}";
+    </script>
+    <script src="{{ asset('js/script_login.js') }}"></script>
 </body>
 </html>

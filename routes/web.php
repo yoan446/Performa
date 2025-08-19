@@ -4,189 +4,130 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserAuthController;
 use App\Models\Appreciation;
+use App\Models\Action;
 use App\Models\User;
 use App\Models\Role;
-use App\Http\Controllers\CycleController;
+use App\Http\Controllers\CycleEvaluationController;
 use App\Http\Controllers\UserController;
 use App\Models\Comite;
-use App\Models\Cycle;
+use App\Models\CycleEvaluation;  // Utilisation du modèle CycleEvaluation
 
 Route::get('/', function () {
     return view('login');
 })->name('login');
 
-
-
+// Route pour la page des évaluations des collaborateurs
 Route::get('/evaluation-collaborateur', function () {
-    if (!session()->has('user_id')) {
-         return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-
     return view('collaborator-evaluations');
 });
 
-
+// Route pour la gestion des objectifs d'un collaborateur
 Route::get('/collaborator-objective', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
     return view('collaborator-objective');
 })->name('collaborator-objective');
 
+// Route pour la gestion des périodes
+Route::get('/user-manage-action', function () {
+    // Récupérer les cycles via CycleEvaluation
+    $controller = app(CycleEvaluationController::class);  // Utiliser le bon contrôleur
+    $cycles = $controller->index(); // Cette méthode doit renvoyer une collection ou un tableau
+    return view('user-manage-action', compact('cycles'));
+})->name('user-manage-action');
 
-Route::get('/user-manage-period', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-
-    // On exécute la méthode index() du contrôleur
-    $controller = app(CycleController::class);
-    $cycles = $controller->index(); // cette fonction doit renvoyer une collection ou un tableau
-    return view('user-manage-period', compact('cycles'));
-})->name('user-manage-period');
-
-
-
+// Route pour le tableau de bord
 Route::get('/dashboard', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-    $userId = session('user_id');
-    $objectifs = \App\Models\Objectifs_user::where('agent_id', $userId)->get();
-
-    $objectives = \App\Models\Objectifs_user::where('agent_id', $userId)
-        ->selectRaw('statut_objectif, COUNT(*) as count')
-        ->groupBy('statut_objectif')
-        ->pluck('count', 'statut_objectif');
-
-    // Crée un tableau avec les statuts connus
-    $stats = [
-        'Validated' => $objectives->get('Valider', 0),
-        'Completed' => $objectives->get('Realiser', 0),
-        'Pending'   => $objectives->get('En Attente de Validation', 0),
-        'Rejected'  => $objectives->get('Rejeter', 0),
-    ];
-    return view('dashboard', compact('objectifs','stats'));
+    return view('dashboard');
 })->name('dashboard');
 
-
+// Route pour créer un objectif
 Route::get('/user-create-objective', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error','Veuillez vous connecter.');
-    }
     return view('user-create-objective');
 })->name('user-create-objective');
 
-
+// Route pour la page d'auto-évaluation
 Route::get('/dashboard-self-evaluation', function () {
-    if (!session()->has('user_id')) {
-       return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-    $userId = session('user_id');
+    $userId = session('user_id');  // Tu peux récupérer ces données d'une autre manière sans utiliser la session si nécessaire
     $objectifs = \App\Models\Objectifs_user::where('agent_id', $userId)->get();
     return view('dashboard-self-evaluation', compact('objectifs'));
 })->name('dashboard-self-evaluation');
 
-
+// Route pour l'historique des évaluations
 Route::get('/user-history', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
     return view('user-history');
 })->name('user-history');
 
-
+// Route pour les évaluations des collaborateurs
 Route::get('/collaborator-evaluations', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
     return view('collaborator-evaluations');
 })->name('collaborator-evaluations');
 
-
+// Route pour créer une évaluation de collaborateur
 Route::get('/user-create-collaborator-evaluation', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-    // 2) Récupère les appréciations (id, code, description)
+    // Récupère les appréciations (id, code, description)
     $appreciations = Appreciation::select('id', 'code', 'description')->orderBy('id')->get();
-    //Envoie la liste à la vue
     return view('user-create-collaborator-evaluation', compact('appreciations'));
 })->name('user-create-collaborator-evaluation');
 
-
+// Route pour gérer le profil utilisateur
 Route::get('/user-manage-profile', function () {
-    if (!session()->has('user_id')) {
-       return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-        return view('user-manage-profile');
+    return view('user-manage-profile');
 })->name('user-manage-profile');
 
+// Route pour gérer les cycles
+Route::get('/user-manage-cycle', function () {
+    return view('user-manage-cycle');
+})->name('user-manage-cycle');
 
+// Route pour la création de périodes
 Route::get('/user-create-period-management', function () {
-    if (!session()->has('user_id')) {
-       return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-        return view('user-create-period-management');
+    $cycles = CycleEvaluation::all();
+    $actions = Action::all();
+    return view('user-create-period-management', compact('cycles','actions'));
 })->name('user-create-period-management');
 
-
+// Route pour créer un comité
 Route::get('/create-comite', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-
     $comites = Comite::with('cycle')->get(); // Si relation définie
-    $cycles = Cycle::all();
-
+    $cycles = CycleEvaluation::all();
     return view('create-comite', compact('comites', 'cycles'));
 })->name('create-comite');
 
+// Route pour gérer les responsable
+Route::get('/create-comite-responsable', function () {
+    // Récupérer les comités
+    $comites = Comite::with('cycle')->get();
 
+    // Récupérer les utilisateurs ayant le rôle "comite"
+    $usersWithRoleComite = User::whereHas('roles', function ($query) {
+        $query->where('nom_role', 'comite'); // Assurez-vous que le nom du rôle est "comite"
+    })->get();
+
+    // Passer les données aux vues
+    return view('create-comite-responsable', compact('comites', 'usersWithRoleComite'));
+})->name('create-comite-responsable');
+
+// Route pour gérer les agents évalués
+Route::get('/create-comite-member', function () {
+    return view('create-comite-member');
+})->name('create-comite-member');
+
+// Route pour la gestion des utilisateurs dans l'organisation
 Route::get('/user-create-organisation-management', function () {
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-
     // Récupération des statistiques utilisateur
     $totalUsers = User::count();
     $activeUsers = User::where('statut_user', 'Actif')->count();
     $inactiveUsers = User::where('statut_user', 'Inactif')->count();
-    // 2) Récupère les appréciations (id, code, description)
     $roles = Role::select('id', 'nom_role')->orderBy('id')->get();
 
-    return view('user-create-organisation-management', compact('totalUsers','activeUsers','inactiveUsers','roles'));
+    return view('user-create-organisation-management', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'roles'));
 })->name('user-create-organisation-management');
 
-
+// Route pour l'auto-évaluation de l'utilisateur
 Route::get('/user-create-self-evaluation', function () {
-    // 1) Vérifie la session
-    if (!session()->has('user_id')) {
-        return view('login')->with('error', 'Veuillez vous connecter.');
-    }
-    // 2) Récupère les appréciations (id, code, description)
+    // Récupère les appréciations (id, code, description)
     $appreciations = Appreciation::select('id', 'code', 'description')->orderBy('id')->get();
-    //Envoie la liste à la vue
     return view('user-create-self-evaluation', compact('appreciations'));
 })->name('user-create-self-evaluation');
 
-
-Route::post('/login', [UserAuthController::class, 'login'])->name('login.submit');
+// Routes de connexion et déconnexion
 Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

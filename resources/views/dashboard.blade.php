@@ -27,7 +27,7 @@
         <div class="main-content" id="main-content">
             <div class="header">
                 <div class="left-header d-flex flex-column">
-                    <h5 >Welcome back,<span id="username" style="font-size:2rem;font-weight:bold;"> {{ session('user_name') }} {{ session('user_secondname') }} </span></h5>
+                    <h5 >Welcome back,<span id="username" style="font-size:2rem;font-weight:bold;"> </span></h5>
                     <p>Evaluation status</p>
                 </div>
                 <div class="right-header d-flex ms-auto">
@@ -41,10 +41,8 @@
                         <div class="divider"></div>
                         <div class="body-panel-card mt-2">
                             <ul class="list-unstyled">
-                                <li class="mb-2">Name: {{ session('user_name') }} {{ session('user_secondname') }} </li>
-                                <li class="mb-2">Direction: {{ session('user_direction') }}</li>
-                                <!-- <li class="mb-2">Identifiant: {{ session('user_id') }}</li> -->
-                                <li>Manager Name: {{ session('user_manager') }}</li>
+                                <li class="mb-2" >Name: <span id="name"></span></li>
+                                <li >Manager Name: <span id="mangername"></span></li>
                             </ul>
                         </div>
                     </div>
@@ -55,28 +53,28 @@
                             <div class="row g-3">
                                 <div class="col-lg-6 col-md-6">
                                     <div class="stat-card-user validated">
-                                        <span class="stat-number-user">{{ $stats['Validated'] }}</span>
+                                        <span class="stat-number-user"></span>
                                         <div class="stat-label-user">Validated</div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-lg-6 col-md-6">
                                     <div class="stat-card-user completed">
-                                        <span class="stat-number-user">{{ $stats['Completed'] }}</span>
+                                        <span class="stat-number-user"></span>
                                         <div class="stat-label-user">Completed</div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-lg-6 col-md-6">
                                     <div class="stat-card-user pending">
-                                        <span class="stat-number-user">{{ $stats['Pending'] }}</span>
+                                        <span class="stat-number-user"></span>
                                         <div class="stat-label-user">Pending Validation</div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-lg-6 col-md-6">
                                     <div class="stat-card-user rejected">
-                                        <span class="stat-number-user">{{ $stats['Rejected'] }}</span>
+                                        <span class="stat-number-user"></span>
                                         <div class="stat-label-user">Rejected</div>
                                     </div>
                                 </div>
@@ -119,59 +117,24 @@
                             <i class="icon-ellipsis-vertical ms-auto" style="color: #98A2B3 !important"></i>
                         </div>
                         <div class="w-100 table-responsive pb-0">
-                           <table class="table mb-0 align-middle">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Title</th>
-                                    <th scope="col">Descriptions</th>
-                                    <th scope="col">Period</th>
-                                    <th scope="col">Weight</th>
-                                    <th scope="col">Value</th>
-                                    <th scope="col">Metric</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($objectifs as $objectif)
-                                    <tr data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight">
-                                        <td>{{ $objectif->id }}</td>
-                                        <td>{{ $objectif->titre }}</td>
-                                        <td>{{ $objectif->description }}</td>
-                                        <td>{{ $objectif->date_debut}} - {{ $objectif->date_fin}}</td>
-                                        <td>{{ $objectif->poids }}</td>
-                                        <td>{{ $objectif->valeur }}</td>
-                                        <td>{{ $objectif->metric }}</td>
-                                        <td>
-                                            @if ($objectif->statut_objectif === 'En Attente de Validation')
-                                                <span class="badge bg-warning">En Attente</span>
-                                            @elseif ($objectif->statut_objectif === 'Valider')
-                                                <span class="badge bg-success">Validé</span>
-                                            @elseif ($objectif->statut_objectif === 'Rejeter')
-                                                <span class="badge-danger" style="padding:5px; border-radius:15px;width:55px">Rejeté</span>
-                                            @else
-                                                <span class="badge bg-secondary">Non défini</span>
-                                            @endif
-                                        </td>
-                                        <td class="button-class">
-                                            <button title="Modifier" class="btn-modifier" data-id="{{ $objectif->id }}" style="background-color:transparent; border:none;">
-                                                <img src="/images/editing.png" alt="" class="edit-class">
-                                            </button>
-
-                                            <button title="Supprimer" class="btn-delete" data-id="{{ $objectif->id }}" style="background-color:transparent; border:none;">
-                                                <img src="/images/delete.png" alt="" class="delete-class">
-                                            </button>
-
-                                        </td>
-                                    </tr>
-                                @empty
+                            <table class="table mb-0 align-middle">
+                                <thead>
                                     <tr>
-                                        <td colspan="8" class="text-center">No objectives Found.</td>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Descriptions</th>
+                                        <th scope="col">Period</th>
+                                        <th scope="col">Weight</th>
+                                        <th scope="col">Value</th>
+                                        <th scope="col">Metric</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col"></th>
                                     </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                
+                                </tbody>
+                            </table>
 
                         </div>
                         <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
@@ -230,7 +193,7 @@
 
     <script src="{{ asset('js/bootstrap.bundle.min.js')}}"></script>
     <script src="{{ asset('js/jquery-3.7.1.min.js')}}"></script>
-    <script src="{{ asset('js/script-objectifs.js')}}"></script>
+    <script src="{{ asset('js/script-profile.js') }}"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const rows = document.querySelectorAll("table tbody tr");
@@ -272,5 +235,4 @@
             });
         });
     </script>
-
 </html>

@@ -1,0 +1,195 @@
+/* ==========================
+   GLOBAL
+========================== */
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f7fa;
+  color: #374151;
+  margin: 0;
+  padding: 0;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+/* ==========================
+   HEADER
+========================== */
+.header-departement h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #14689E;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ==========================
+   ACTION BAR
+========================== */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  width: 260px;
+  transition: all 0.3s ease;
+}
+
+.search-box i {
+  color: #9ca3af;
+  margin-right: 0.5rem;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.95rem;
+  background: transparent;
+  color: #374151;
+}
+
+/* ==========================
+   BUTTONS
+========================== */
+.btn-success {
+  background: #28a745;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.6rem 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background: #218838;
+}
+
+.btn-primary {
+  background: #14689E;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.6rem 1.2rem;
+}
+
+.btn-primary:hover {
+  background: #125985;
+}
+
+.btn-secondary {
+  border-radius: 8px;
+}
+
+/* ==========================
+   TABLE
+========================== */
+.table-container {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  overflow-x: auto;
+}
+
+.table-header h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #14689E;
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 0 0.6rem;
+  width: 100%;
+}
+
+.table thead th {
+  background: #e9f2f8;
+  color: #14689E;
+  font-weight: 600;
+  border: none;
+  padding: 0.8rem 1rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.table tbody tr {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.table tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.table td, 
+.table th {
+  vertical-align: middle;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+}
+
+/* ==========================
+   ACTIONS (EDIT/DELETE)
+========================== */
+.btn-edit, .btn-delete {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.btn-edit i {
+  color: #14689E;
+}
+
+.btn-delete i {
+  color: #dc3545;
+}
+
+.btn-edit:hover {
+  background: rgba(20,104,158,0.08);
+}
+
+.btn-delete:hover {
+  background: rgba(220,53,69,0.08);
+}
+
+/* ==========================
+   MODAL
+========================== */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+  border-bottom: none;
+}
+
+.modal-footer {
+  border-top: none;
+}

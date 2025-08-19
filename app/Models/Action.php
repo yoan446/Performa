@@ -13,6 +13,7 @@ class Action extends Model
         'url_endpoints',
         'description',
         'nom_module',
+        'method'
     ];
 
     /**

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -46,9 +46,6 @@
         <div class="table-header">
           <h3>Committee - Responsible Links</h3>
         </div>
-        @php
-          $grouped = $liaisons->groupBy('comite_id');
-        @endphp
         <table id="linkCommitteeTable">
           <thead>
             <tr>
@@ -58,25 +55,7 @@
             </tr>
           </thead>
           <tbody id="linkCommitteeTableBody">
-            @foreach($grouped as $comite_id => $liaisonGroup)
-              <tr data-id="{{ $comite_id }}">
-                <td>{{ $liaisonGroup->first()->nom_comite }}</td>
-                <td>
-                  <ul>
-                    @forelse($liaisonGroup as $liaison)
-                      <li>{{ $liaison->name }} {{ $liaison->secondname }}</li>
-                    @empty
-                      <li><em>Aucun responsable</em></li>
-                    @endforelse
-                  </ul>
-                </td>
-                <td>
-                  <button class="btn-edit" onclick="editLink({{ $comite_id }})">
-                    <img src="/images/editing.png" class="edit-class" alt="edit link" />
-                  </button>
-                </td>
-              </tr>
-            @endforeach
+            
           </tbody>
         </table>
       </div>
@@ -108,7 +87,7 @@
             <div class="form-group">
               <label for="responsableSelect">Responsibles *</label>
               <select id="responsableSelect" name="user_ids[]" class="form-control" multiple="multiple" required>
-                @foreach ($users as $user)
+                @foreach ($usersWithRoleComite as $user)
                   <option value="{{ $user->id }}">{{ $user->name }} {{ $user->secondname }}</option>
                 @endforeach
               </select>

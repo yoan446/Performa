@@ -15,19 +15,38 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Tente d'authentifier avec JWT guard 'api'
+        // Authentification via JWT
         if (!$token = Auth::guard('api')->attempt($credentials)) {
             return response()->json(['error' => 'Identifiants incorrects'], 401);
         }
 
-        // Retourne le token JWT avec ses infos
-        return $this->respondWithToken($token);
+        // Récupérer l'utilisateur avec ses rôles
+        $user = Auth::guard('api')->user();
+        unset($user->roles);
+
+        // Extraire juste les noms/slug des rôles dans un tableau
+        $roles_users = $user->roles->pluck('nom_role')->toArray();
+
+        // Retourner le token et infos utilisateur
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
+            'user' => $user,
+            'roles' => $roles_users
+        ]);
     }
+
 
     // Retourne les infos de l'utilisateur connecté
     public function me()
     {
-        return response()->json(Auth::guard('api')->user());
+        $user = Auth::guard('api')->user();
+
+        // Charger les rôles via la relation
+        $user->load('roles');
+
+        return response()->json($user);
     }
 
     // Déconnexion (invalidation du token JWT)

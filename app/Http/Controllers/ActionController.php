@@ -29,6 +29,7 @@ class ActionController extends Controller
             'url_endpoints' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'nom_module' => 'required|string|max:255',
+            'method' => 'required|string|max:255',
         ]);
 
         $action = Action::create($validated);

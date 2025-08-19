@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Performa - Comite</title>
 
   <!-- Styles -->
@@ -79,7 +80,7 @@
                 <select id="committeeCycle" name="cycle_id" required>
                     <option value="">-- Select Cycle --</option>
                     @foreach ($cycles as $cycle)
-                        <option value="{{ $cycle->id }}">{{ $cycle->nom_cycle }}</option>
+                        <option value="{{ $cycle->id_cycle }}">{{ $cycle->titre }}</option>
                     @endforeach
                 </select>
             </div>
