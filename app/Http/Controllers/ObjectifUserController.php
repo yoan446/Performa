@@ -282,4 +282,29 @@ class ObjectifUserController extends Controller
         $objectifs = Objectifs_user::where('agent_id', $userId)->get();
         return response()->json($objectifs);
     }
+
+    //fonction qui renvoie tous les obejctifs enfonction de la période
+    public function getObjectifsByCycles($id)
+    {
+        try {
+            // Vérifie si le cycle existe
+            $cycle = CycleEvaluation::findOrFail($id);
+
+            // Récupère les objectifs liés à ce cycle
+            $objectifs = Objectifs_user::where('id_cycle', $id)->get();
+
+            return response()->json([
+                'success' => true,
+                'cycle' => $cycle,
+                'objectifs' => $objectifs
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cycle introuvable ou erreur serveur',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

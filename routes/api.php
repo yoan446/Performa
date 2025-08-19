@@ -53,6 +53,9 @@ Route::middleware('auth:api')->group(function () {
             Route::get('/statistique/{id}', [ObjectifUserController::class, 'statistique']);
             Route::post('/{agentId}/rejeter/{userId}', [ObjectifUserController::class, 'rejeter']);
             Route::post('/{agentId}/objectifs/valider-tous', [ObjectifUserController::class, 'validerTousObjectifs']);
+            //récupere les objectifs en fonction du cycle
+            Route::get('/cycles/{id}/objectifs', [ObjectifUserController::class, 'getObjectifsByCycles']);
+
         });
 
         // =====================
