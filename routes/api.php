@@ -32,9 +32,15 @@ Route::middleware('auth:api')->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh']);
 
     // =====================
-    //Utilisateurs
+    // Utilisateurs
     // =====================
-    Route::resource('users', UserController::class);
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);       // Liste des utilisateurs
+        Route::post('/', [UserController::class, 'store']);      // Créer un utilisateur
+        Route::get('{id}', [UserController::class, 'show']);     // Afficher un utilisateur
+        Route::put('{id}', [UserController::class, 'update']);   // Modifier un utilisateur
+        Route::delete('{id}', [UserController::class, 'destroy']); // Supprimer un utilisateur
+    });
     Route::get('/managers/{id}/collaborateurs', [UserController::class, 'collaborateursDuManager']);
 
     
@@ -114,38 +120,81 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // =====================
-    //Appreciations OK
+    // Appreciations
     // =====================
-    Route::resource('appreciations', AppreciationController::class);
+    Route::prefix('appreciations')->group(function () {
+        Route::get('/', [AppreciationController::class, 'index']);     // Liste des appréciations
+        Route::post('/', [AppreciationController::class, 'store']);    // Création d'une appréciation
+        Route::get('{id}', [AppreciationController::class, 'show']);   // Afficher une appréciation
+        Route::put('{id}', [AppreciationController::class, 'update']); // Modifier une appréciation
+        Route::delete('{id}', [AppreciationController::class, 'destroy']); // Supprimer une appréciation
+    });
 
     // =====================
-    //Cycles évaluation ok
+    // Cycles évaluation
     // =====================
-    Route::resource('cycles', CycleEvaluationController::class);
+    Route::prefix('cycles')->group(function () {
+        Route::get('/', [CycleEvaluationController::class, 'index']);
+        Route::post('/', [CycleEvaluationController::class, 'store']);
+        Route::get('{id}', [CycleEvaluationController::class, 'show']);
+        Route::put('{id}', [CycleEvaluationController::class, 'update']);
+        Route::delete('{id}', [CycleEvaluationController::class, 'destroy']);
+    });
 
     // =====================
-    //Rôles ok
+    // Rôles
     // =====================
-    Route::resource('roles', RoleController::class);
+    Route::prefix('roles')->group(function () {
+        Route::get('/', [RoleController::class, 'index']);
+        Route::post('/', [RoleController::class, 'store']);
+        Route::get('{id}', [RoleController::class, 'show']);
+        Route::put('{id}', [RoleController::class, 'update']);
+        Route::delete('{id}', [RoleController::class, 'destroy']);
+    });
 
     // =====================
-    //Actions ok
+    // Actions
     // =====================
-    Route::resource('actions', ActionController::class);
+    Route::prefix('actions')->group(function () {
+        Route::get('/', [ActionController::class, 'index']);
+        Route::post('/', [ActionController::class, 'store']);
+        Route::get('{id}', [ActionController::class, 'show']);
+        Route::put('{id}', [ActionController::class, 'update']);
+        Route::delete('{id}', [ActionController::class, 'destroy']);
+    });
 
-    //=============================
-    //Période associé à une action ok
-    //=============================
-    Route::resource('periodes-actions', PeriodeActionController::class);
+    // =====================
+    // Périodes associées à une action
+    // =====================
+    Route::prefix('periodes-actions')->group(function () {
+        Route::get('/', [PeriodeActionController::class, 'index']);
+        Route::post('/', [PeriodeActionController::class, 'store']);
+        Route::get('{id}', [PeriodeActionController::class, 'show']);
+        Route::put('{id}', [PeriodeActionController::class, 'update']);
+        Route::delete('{id}', [PeriodeActionController::class, 'destroy']);
+    });
 
-    //==============================
-    //Metrics pour les objectifs ok
-    //=============================
-    Route::resource('metrics', MetricController::class);
+    // =====================
+    // Metrics pour les objectifs
+    // =====================
+    Route::prefix('metrics')->group(function () {
+        Route::get('/', [MetricController::class, 'index']);
+        Route::post('/', [MetricController::class, 'store']);
+        Route::get('{id}', [MetricController::class, 'show']);
+        Route::put('{id}', [MetricController::class, 'update']);
+        Route::delete('{id}', [MetricController::class, 'destroy']);
+    });
 
-    //=============================================
-    //Statuts pour les objectifs et evaluations ok
-    //=============================================
-    Route::resource('statuts', StatutController::class);
+    // =====================
+    // Statuts pour objectifs & évaluations
+    // =====================
+    Route::prefix('statuts')->group(function () {
+        Route::get('/', [StatutController::class, 'index']);
+        Route::post('/', [StatutController::class, 'store']);
+        Route::get('{id}', [StatutController::class, 'show']);
+        Route::put('{id}', [StatutController::class, 'update']);
+        Route::delete('{id}', [StatutController::class, 'destroy']);
+    });
+
 
 });

@@ -38,5 +38,10 @@ class Objectifs_user extends Model
     {
         return $this->belongsTo(CycleEvaluation::class, 'id_cycle');
     }
+
+    public function statut()
+    {
+        return $this->belongsTo(Statut::class, 'statut_objectif');
+    }
     
 }

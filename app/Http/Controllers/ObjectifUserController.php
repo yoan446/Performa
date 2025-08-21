@@ -277,11 +277,22 @@ class ObjectifUserController extends Controller
         return response()->json(['message' => 'Objectif supprimé avec succès']);
     }
 
+
     public function getObjectifsByUser($userId)
     {
-        $objectifs = Objectifs_user::where('agent_id', $userId)->get();
+        $now = Carbon::now();
+
+        $objectifs = Objectifs_user::with(['cycle','statut','agent','manager'])
+            ->where('agent_id', $userId)
+            ->whereHas('cycle', function($query) use ($now) {
+                $query->whereYear('date_debut', '<=', $now->year)
+                    ->whereYear('date_fin', '>=', $now->year);
+            })
+            ->get();
+
         return response()->json($objectifs);
     }
+
 
     //fonction qui renvoie tous les obejctifs enfonction de la période
     public function getObjectifsByCycles($id)
@@ -295,8 +306,8 @@ class ObjectifUserController extends Controller
 
             return response()->json([
                 'success' => true,
-                'cycle' => $cycle,
-                'objectifs' => $objectifs
+                'objectifs' => $objectifs,
+                'cycle' => $cycle
             ], 200);
 
         } catch (\Exception $e) {
